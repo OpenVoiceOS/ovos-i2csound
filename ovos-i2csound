@@ -32,152 +32,153 @@ declare -A detection_results
 detect_i2c_device() {
     local address="0x$1"
     if i2cdetect -y -a 1 "$address" "$address" | grep -qE "($1|UU)"; then
-    return 0  # true
-else
-return 1  # false
-fi
+        return 0  # true
+    else
+        return 1  # false
+    fi
 }
 
 # Main execution
 main() {
     # Detecting I2C devices
     for device in "${!devices[@]}"; do
-    address="${devices[$device]}"
-    if detect_i2c_device "$address"; then
-    detection_results[$device]=true
-    else
-    detection_results[$device]=false
-    fi
-    echo "$device detection result: ${detection_results[$device]}"
+        address="${devices[$device]}"
+        if detect_i2c_device "$address"; then
+            detection_results[$device]=true
+        else
+            detection_results[$device]=false
+        fi
+        echo "$device detection result: ${detection_results[$device]}"
     done
 
     # Handling hardware-specific configurations
     if [[ ${detection_results[WM8XXX]} == true ]] ; then
-    echo "WM8XXX based HAT found"
-    atmega328p=$(avrdude -p atmega328p -C /etc/avrdude-gpio.conf -c linuxgpio -U signature:r:-:i -F 2>/dev/null | head -n1)
-    if [ "${atmega328p}" == ":030000001E950F3B" ] ; then
-    detection_results[MARK1]=true
-    echo "Mark-1 enclosure $MARK1"
-    else
-    echo "WM8960 based 2-mic $WM8XXX"
-    fi
+        echo "WM8XXX based HAT found"
+        atmega328p=$(avrdude -p atmega328p -C /etc/avrdude-gpio.conf -c linuxgpio -U signature:r:-:i -F 2>/dev/null | head -n1)
+        if [ "${atmega328p}" == ":030000001E950F3B" ] ; then
+            detection_results[MARK1]=true
+            echo "Mark-1 enclosure $MARK1"
+        else
+            detection_results[WM8960]=true
+            echo "WM8960 based 2-mic $WM8960"
+        fi
     fi
 
-    if [[ ${detection_results[WM8XXX]} == true ]] && [[ ${detection_results[RESPEAKER4]} == false ]] ; then
-    echo "Installing and configuring WM8960 based 2-mic HAT"
-    dtoverlay wm8960-soundcard
-    echo "Configuring board"
-    sleep 3 # Allow some time to fully initialise the hardware / driver
-    amixer -c "wm8960soundcard" cset numid=1 34,34
-    amixer -c "wm8960soundcard" cset numid=26 3
-    amixer -c "wm8960soundcard" cset numid=27 4
-    amixer -c "wm8960soundcard" cset numid=30 5
-    amixer -c "wm8960soundcard" cset numid=32 5
-    amixer -c "wm8960soundcard" cset numid=33 5
-    amixer -c "wm8960soundcard" cset numid=34 25
-    amixer -c "wm8960soundcard" cset numid=35 on
-    amixer -c "wm8960soundcard" cset numid=9 3
-    amixer -c "wm8960soundcard" cset numid=8 3
-    amixer -c "wm8960soundcard" cset numid=49 on
-    amixer -c "wm8960soundcard" cset numid=51 on
-    amixer -c "wm8960soundcard" cset numid=37 0
-    amixer -c "wm8960soundcard" cset numid=38 0
-    amixer -c "wm8960soundcard" cset numid=39 5
-    amixer -c "wm8960soundcard" cset numid=48 on
-    amixer -c "wm8960soundcard" cset numid=50 on
-    amixer -c "wm8960soundcard" cset numid=54 on
-    amixer -c "wm8960soundcard" cset numid=16 5
-    amixer -c "wm8960soundcard" cset numid=15 4
-    echo "Configuring button"
-    dtoverlay wm8960-button-overlay
+    if [[ ${detection_results[WM8960]} == true ]] && [[ ${detection_results[RESPEAKER4]} == false ]] ; then
+        echo "Installing and configuring WM8960 based 2-mic HAT"
+        dtoverlay wm8960-soundcard
+        echo "Configuring board"
+        sleep 3 # Allow some time to fully initialise the hardware / driver
+        amixer -c "wm8960soundcard" cset numid=1 34,34
+        amixer -c "wm8960soundcard" cset numid=26 3
+        amixer -c "wm8960soundcard" cset numid=27 4
+        amixer -c "wm8960soundcard" cset numid=30 5
+        amixer -c "wm8960soundcard" cset numid=32 5
+        amixer -c "wm8960soundcard" cset numid=33 5
+        amixer -c "wm8960soundcard" cset numid=34 25
+        amixer -c "wm8960soundcard" cset numid=35 on
+        amixer -c "wm8960soundcard" cset numid=9 3
+        amixer -c "wm8960soundcard" cset numid=8 3
+        amixer -c "wm8960soundcard" cset numid=49 on
+        amixer -c "wm8960soundcard" cset numid=51 on
+        amixer -c "wm8960soundcard" cset numid=37 0
+        amixer -c "wm8960soundcard" cset numid=38 0
+        amixer -c "wm8960soundcard" cset numid=39 5
+        amixer -c "wm8960soundcard" cset numid=48 on
+        amixer -c "wm8960soundcard" cset numid=50 on
+        amixer -c "wm8960soundcard" cset numid=54 on
+        amixer -c "wm8960soundcard" cset numid=16 5
+        amixer -c "wm8960soundcard" cset numid=15 4
+        echo "Configuring button"
+        dtoverlay wm8960-button-overlay
     fi
 
     if [[ ${detection_results[MARK1]} == true ]] ; then
-    echo "Installing and configuring WM8731 based sound HAT"
-    dtoverlay proto-codec
-    echo "Configuring board"
-    sleep 3 # Allow some time to fully initialise the hardware / driver
-    amixer -c "sndrpiproto" cset numid=1 107,107
-    amixer -c "sndrpiproto" cset numid=2 on
-    amixer -c "sndrpiproto" cset numid=6 on
-    amixer -c "sndrpiproto" cset numid=10 on
-    amixer -c "sndrpiproto" cset numid=14 1
-    amixer -c "sndrpiproto" cset numid=13 on
-    amixer -c "sndrpiproto" cset numid=9 on
-    echo "Resetting Mark-1 faceplate"
-    echo "eyes.color=7365993" > /dev/ttyAMA0  # color=soft gray, #706569
-    echo "mouth.text=" > /dev/ttyAMA0
+        echo "Installing and configuring WM8731 based sound HAT"
+        dtoverlay proto-codec
+        echo "Configuring board"
+        sleep 3 # Allow some time to fully initialise the hardware / driver
+        amixer -c "sndrpiproto" cset numid=1 107,107
+        amixer -c "sndrpiproto" cset numid=2 on
+        amixer -c "sndrpiproto" cset numid=6 on
+        amixer -c "sndrpiproto" cset numid=10 on
+        amixer -c "sndrpiproto" cset numid=14 1
+        amixer -c "sndrpiproto" cset numid=13 on
+        amixer -c "sndrpiproto" cset numid=9 on
+        echo "Resetting Mark-1 faceplate"
+        echo "eyes.color=7365993" > /dev/ttyAMA0  # color=soft gray, #706569
+        echo "mouth.text=" > /dev/ttyAMA0
     fi
 
     if [[ ${detection_results[RESPEAKER4]} == true ]] && [[ ${detection_results[RESPEAKER6]} == false ]] ; then
-    echo "Installing and configuring ReSpeaker 4-mic"
-    dtoverlay seeed-4mic-voicecard
-    echo "Configuring board"
-    sleep 3 # Allow some time to fully initialise the hardware / driver
-    amixer -c "seeed4micvoicec" cset numid=1 222
-    amixer -c "seeed4micvoicec" cset numid=2 222
-    amixer -c "seeed4micvoicec" cset numid=3 222
-    amixer -c "seeed4micvoicec" cset numid=4 222
-    amixer -c "seeed4micvoicec" cset numid=5 13
-    amixer -c "seeed4micvoicec" cset numid=6 13
-    amixer -c "seeed4micvoicec" cset numid=7 13
-    amixer -c "seeed4micvoicec" cset numid=8 13
+        echo "Installing and configuring ReSpeaker 4-mic"
+        dtoverlay seeed-4mic-voicecard
+        echo "Configuring board"
+        sleep 3 # Allow some time to fully initialise the hardware / driver
+        amixer -c "seeed4micvoicec" cset numid=1 222
+        amixer -c "seeed4micvoicec" cset numid=2 222
+        amixer -c "seeed4micvoicec" cset numid=3 222
+        amixer -c "seeed4micvoicec" cset numid=4 222
+        amixer -c "seeed4micvoicec" cset numid=5 13
+        amixer -c "seeed4micvoicec" cset numid=6 13
+        amixer -c "seeed4micvoicec" cset numid=7 13
+        amixer -c "seeed4micvoicec" cset numid=8 13
     fi
 
     if [[ ${detection_results[RESPEAKER6]} == true ]] && [[ ${detection_results[RESPEAKER4]} == true ]] ; then
-    echo "Installing and configuring ReSpeaker 6mic"
-    dtoverlay seeed-8mic-voicecard
-    echo "Configuring board"
-    sleep 3 # Allow some time to fully initialise the hardware / driver
-    amixer -c "seeed8micvoicec" cset numid=1 208
-    amixer -c "seeed8micvoicec" cset numid=2 208
-    amixer -c "seeed8micvoicec" cset numid=3 208
-    amixer -c "seeed8micvoicec" cset numid=4 208
-    amixer -c "seeed8micvoicec" cset numid=5 13
-    amixer -c "seeed8micvoicec" cset numid=6 13
-    amixer -c "seeed8micvoicec" cset numid=7 13
-    amixer -c "seeed8micvoicec" cset numid=8 13
-    amixer -c "seeed8micvoicec" cset numid=9 208
-    amixer -c "seeed8micvoicec" cset numid=10 208
-    amixer -c "seeed8micvoicec" cset numid=11 208
-    amixer -c "seeed8micvoicec" cset numid=12 208
-    amixer -c "seeed8micvoicec" cset numid=13 13
-    amixer -c "seeed8micvoicec" cset numid=14 13
-    amixer -c "seeed8micvoicec" cset numid=15 13
-    amixer -c "seeed8micvoicec" cset numid=16 13
+        echo "Installing and configuring ReSpeaker 6mic"
+        dtoverlay seeed-8mic-voicecard
+        echo "Configuring board"
+        sleep 3 # Allow some time to fully initialise the hardware / driver
+        amixer -c "seeed8micvoicec" cset numid=1 208
+        amixer -c "seeed8micvoicec" cset numid=2 208
+        amixer -c "seeed8micvoicec" cset numid=3 208
+        amixer -c "seeed8micvoicec" cset numid=4 208
+        amixer -c "seeed8micvoicec" cset numid=5 13
+        amixer -c "seeed8micvoicec" cset numid=6 13
+        amixer -c "seeed8micvoicec" cset numid=7 13
+        amixer -c "seeed8micvoicec" cset numid=8 13
+        amixer -c "seeed8micvoicec" cset numid=9 208
+        amixer -c "seeed8micvoicec" cset numid=10 208
+        amixer -c "seeed8micvoicec" cset numid=11 208
+        amixer -c "seeed8micvoicec" cset numid=12 208
+        amixer -c "seeed8micvoicec" cset numid=13 13
+        amixer -c "seeed8micvoicec" cset numid=14 13
+        amixer -c "seeed8micvoicec" cset numid=15 13
+        amixer -c "seeed8micvoicec" cset numid=16 13
     fi
 
     if [[ ${detection_results[ADAFRUIT]} == true ]] ; then
-    echo "Installing and configuring Adafruit"
-    /usr/sbin/i2cset -y 1 0x4b 30 # Set maximum volume to 30
+        echo "Installing and configuring Adafruit"
+        /usr/sbin/i2cset -y 1 0x4b 30 # Set maximum volume to 30
     fi
 
     if [[ ${detection_results[TAS5806]} == true ]] ; then
-    echo "Installing and configuring SJ-201 HAT"
-    # Initializing XMOS xvf3510
-    dtoverlay xvf3510
-    xvf3510-flash --direct "/usr/lib/firmware/xvf3510/app_xvf3510_int_spi_boot_v4_1_0.bin"
-    # Initializing Texas Instruments 5806 Amplifier
-    /usr/bin/tas5806-init
-    if [[ ${detection_results[SJ201LED]} == true ]] ; then
-    echo "Found revision-6 SJ-201 board"
-    # Initializing and resetting LED ring
-    /usr/bin/sj201-reset-led
-    # Reset FAN to low speed
-    /usr/sbin/i2cset -a -y 1 0x04 101 30 i
-    else
-    echo "Assume revision-10 SJ-201 board"
-    dtoverlay sj201-rev10-pwm-fan-overlay
-    fi
-    echo "Configuring buttons"
-    dtoverlay sj201-buttons-overlay
+        echo "Installing and configuring SJ-201 HAT"
+        # Initializing XMOS xvf3510
+        dtoverlay xvf3510
+        xvf3510-flash --direct "/usr/lib/firmware/xvf3510/app_xvf3510_int_spi_boot_v4_1_0.bin"
+        # Initializing Texas Instruments 5806 Amplifier
+        /usr/bin/tas5806-init
+        if [[ ${detection_results[SJ201LED]} == true ]] ; then
+            echo "Found revision-6 SJ-201 board"
+            # Initializing and resetting LED ring
+            /usr/bin/sj201-reset-led
+            # Reset FAN to low speed
+            /usr/sbin/i2cset -a -y 1 0x04 101 30 i
+        else
+            echo "Assume revision-10 SJ-201 board"
+            dtoverlay sj201-rev10-pwm-fan-overlay
+        fi
+        echo "Configuring buttons"
+        dtoverlay sj201-buttons-overlay
     fi
 
     if [[ ${detection_results[AIYVOICEBONNET]} == true ]] ; then
-    echo "Installing and configuring AIY VoiceBonnet"
-    # TODO by someone that has that HAT
+        echo "Installing and configuring AIY VoiceBonnet"
+        # TODO by someone that has that HAT
     fi
-    }
+}
 
 # Run the main function
 main
