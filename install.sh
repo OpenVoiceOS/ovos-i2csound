@@ -30,11 +30,15 @@ main () {
     echo "Reboot to start using"
 }
 
-echo "This script will install several files to your system"
-read -p "Would you like to continue? [y/N]" continue
-
-if [[ ! "$continue" == [Yy]* ]]; then
+if [[ "$1" == "--auto" ]]; then
     main
+else
+    echo "This script will install several files to your system"
+    read -p "Would you like to continue? [y/N]" continue
+
+    if [[ ! "$continue" == [Yy]* ]]; then
+        main
+    fi
 fi
 
 exit
