@@ -26,7 +26,7 @@ main () {
         rm ${mod_dir}/i2c.conf
     fi
     echo "Installing i2c.conf to /etc/modules-load.d"
-    cp $PWD/i2c.conf /etc/${mod_dir}/i2c.conf
+    cp $PWD/i2c.conf ${mod_dir}/i2c.conf
 
     if [[ -f ${rules_dir}/99-i2c.rules ]]; then
         echo "Removing old i2c.rules file"
