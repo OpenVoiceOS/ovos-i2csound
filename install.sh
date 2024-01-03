@@ -1,67 +1,55 @@
 #!/bin/bash
-
-# Must be run as root
-if [[ $EUID > 0 ]]; then
-    echo "This script must run as root"
-    exit
-fi
-
-main () {
-    echo "Checking for i2cdetect"
-    if hash i2cdetect 2>/dev/null; then
-        echo "i2cdetect is already installed"
+# Error handling function
+bail() {
+    echo "Error: $1" >&2
+    exit 1
+    }
+# Function to install a package if it's not already installed
+install_package() {
+    local package=$1
+    echo "Checking for $package..."
+    if ! hash "$package" 2>/dev/null; then
+        echo "Installing $package..."
+        apt update && apt install -y "$package" || bail "Failed to install $package."
     else
-        echo "i2cdetect is not installed"
-        echo "Installing now"
-        apt update && apt install -y i2c-tools
+        echo "$package is already installed."
     fi
-
-    mod_dir=/etc/modules-load.d
-    rules_dir=/usr/lib/udev/rules.d
-    service_dir=/etc/systemd/system
-    script_dir=/usr/libexec
-
-    if [[ -f ${mod_dir}/i2c.conf ]]; then
-        echo "Removing old i2c.conf file"
-        rm ${mod_dir}/i2c.conf
-    fi
-    echo "Installing i2c.conf to /etc/modules-load.d"
-    cp $PWD/i2c.conf ${mod_dir}/i2c.conf
-
-    if [[ -f ${rules_dir}/99-i2c.rules ]]; then
-        echo "Removing old i2c.rules file"
-        rm ${rules_dir}/99-i2c.rules
-    fi
-    echo "Installing udev rules for i2c"
-    cp $PWD/99-i2c.rules ${rules_dir}/99-i2c.rules
-
-    if [[ -f ${service_dir}/i2csound.service ]]; then
-        echo "Removing old i2csound.service file"
-        rm ${service_dir}/i2csound.service
-    fi
-    echo "Installing i2csound.service"
-    cp $PWD/i2csound.service /etc/systemd/system/i2csound.service
-
-    if [[ -f ${script_dir}/ovos-i2csound ]]; then
-        echo "Removing old i2csound script"
-        rm ${script_dir}/ovos-i2csound
-    fi
-    echo "Installing ovos-i2csound script"
-    cp $PWD/ovos-i2csound /usr/libexec/ovos-i2csound
-}
-
-if [[ "$1" == "--auto" ]]; then
-    main
-else
-    echo "This script will install several files to your system"
-    read -p "Would you like to continue? [y/N]" continue
-
-    if [[ "$continue" == [Yy]* ]]; then
+    }
+# Function to copy a file with error handling
+copy_file() {
+    local source=$1
+    local destination=$2
+    echo "Copying $source to $destination..."
+    cp "$source" "$destination" || bail "Failed to copy $source to $destination."
+    }
+# Main installation function
+main() {
+    echo "Starting installation process..."
+    install_package i2c-tools
+    copy_file "$PWD/i2c.conf" "/etc/modules-load.d/i2c.conf"
+    copy_file "$PWD/99-i2c.rules" "/usr/lib/udev/rules.d/99-i2c.rules"
+    copy_file "$PWD/i2csound.service" "/etc/systemd/system/i2csound.service"
+    copy_file "$PWD/ovos-i2csound" "/usr/libexec/ovos-i2csound"
+    chmod +x /usr/libexec/ovos-i2csound
+    echo "Installation complete. Please reboot your system to apply changes."
+    }
+# Check for root privileges
+[[ $EUID -ne 0 ]] && bail "This script must be run as root."
+# Handle user confirmation for installation
+confirm_installation() {
+    read -p "This script will install several files to your system. Continue? [y/N] " response
+    if [[ "$response" =~ ^[Yy] ]]; then
         main
-        echo
-        echo "Done installing ovos-i2csound"
-        echo "Reboot to start using"
+    else
+        bail "Installation aborted by the user."
     fi
-fi
-
-exit
+    }
+# Handle command-line arguments
+case "$1" in
+    --auto)
+        main
+        ;;
+    *)
+        confirm_installation
+        ;;
+esac
