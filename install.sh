@@ -26,11 +26,15 @@ copy_file() {
 main() {
     echo "Starting installation process..."
     install_package i2c-tools
-    copy_file "$PWD/i2c.conf" "/etc/modules-load.d/i2c.conf"
-    copy_file "$PWD/99-i2c.rules" "/usr/lib/udev/rules.d/99-i2c.rules"
-    copy_file "$PWD/i2csound.service" "/etc/systemd/system/i2csound.service"
-    copy_file "$PWD/ovos-i2csound" "/usr/libexec/ovos-i2csound"
-    chmod +x /usr/libexec/ovos-i2csound
+    local mod_dir=/etc/modules-load.d
+    local rules_dir=/usr/lib/udev/rules.d
+    local service_dir=/etc/systemd/system
+    local script_dir=/usr/libexec
+    copy_file "$PWD/i2c.conf" "$mod_dir/i2c.conf"
+    copy_file "$PWD/99-i2c.rules" "$rules_dir/99-i2c.rules"
+    copy_file "$PWD/i2csound.service" "$service_dir/i2csound.service"
+    copy_file "$PWD/ovos-i2csound" "$script_dir/ovos-i2csound"
+    chmod +x "${script_dir}/ovos-i2csound"
     echo "Installation complete. Please reboot your system to apply changes."
     }
 # Check for root privileges
