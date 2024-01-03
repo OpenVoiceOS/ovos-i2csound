@@ -177,6 +177,39 @@ main() {
     if [[ ${detection_results[AIYVOICEBONNET]} == true ]] ; then
         echo "Installing and configuring AIY VoiceBonnet"
         # TODO by someone that has that HAT
+        dtoverlay aiy-voicebonnet
+        echo "Configuring board"
+        sleep 3 # Allow some time to fully initialise the hardware / driver
+
+        amixer -c "aiyvoicebonnet" cset numid=10 80,80
+        amixer -c "aiyvoicebonnet" cset numid=58 on
+        amixer -c "aiyvoicebonnet" cset numid=60 on
+        amixer -c "aiyvoicebonnet" cset numid=65 on
+        amixer -c "aiyvoicebonnet" cset numid=67 on
+        amixer -c "aiyvoicebonnet" cset numid=101 on
+        amixer -c "aiyvoicebonnet" cset numid=105 on
+        amixer -c "aiyvoicebonnet" cset numid=109 on
+        amixer -c "aiyvoicebonnet" cset numid=110 on
+        amixer -c "aiyvoicebonnet" cset numid=116 on
+        amixer -c "aiyvoicebonnet" cset numid=25 on
+        amixer -c "aiyvoicebonnet" cset numid=5 75
+        amixer -c "aiyvoicebonnet" cset numid=83 on
+        amixer -c "aiyvoicebonnet" cset numid=87 on
+        amixer -c "aiyvoicebonnet" cset numid=99 on
+        amixer -c "aiyvoicebonnet" cset numid=100 on
+        amixer -c "aiyvoicebonnet" cset numid=112 on
+        amixer -c "aiyvoicebonnet" cset numid=114 on
+        amixer -c "aiyvoicebonnet" cset numid=26 on
+        amixer -c "aiyvoicebonnet" cset numid=1 on
+        amixer -c "aiyvoicebonnet" cset numid=2 75
+        amixer -c "aiyvoicebonnet" cset numid=16 65,65
+        amixer -c "aiyvoicebonnet" cset numid=19 1,1
+        amixer -c "aiyvoicebonnet" cset numid=31 on
+        amixer -c "aiyvoicebonnet" cset numid=35 on
+        amixer -c "aiyvoicebonnet" cset numid=47 on
+        amixer -c "aiyvoicebonnet" cset numid=49 on
+        amixer -c "aiyvoicebonnet" cset numid=27 on
+
     fi
 }
 
