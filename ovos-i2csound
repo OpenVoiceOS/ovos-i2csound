@@ -89,6 +89,8 @@ main() {
         amixer -c "wm8960soundcard" cset numid=54 on
         amixer -c "wm8960soundcard" cset numid=16 5
         amixer -c "wm8960soundcard" cset numid=15 4
+        amixer -c "wm8960soundcard" cset numid=11 120,120
+        amixer -c "wm8960soundcard" cset numid=13 120,120
         echo "Configuring button"
         dtoverlay wm8960-button-overlay
     fi
