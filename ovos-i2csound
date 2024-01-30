@@ -52,31 +52,31 @@ pulseaudio_config() {
     fi
 
     # Remove old configurations
-    if [ -f /etc/pulse/system.pa ]; then
+    if [ -f /etc/pulse/system.pa ] || [ -L /etc/pulse/system.pa ]; then
         rm /etc/pulse/system.pa
     fi
-    if [ -f /etc/pulse/default.pa ]; then
+    if [ -f /etc/pulse/default.pa ] || [ -L /etc/pulse/system.pa ]; then
         rm /etc/pulse/default.pa
     fi
-    if [ -f /etc/pulse/daemon.conf ]; then
+    if [ -f /etc/pulse/daemon.conf ] || [ -L /etc/pulse/daemon.conf ]; then
         rm /etc/pulse/daemon.conf
     fi
-    if [ -f /var/lib/alsa/asound.state ]; then
+    if [ -f /var/lib/alsa/asound.state ] || [ -L /var/lib/alsa/asound.state ]; then
         rm /var/lib/alsa/asound.state
     fi
-    if [ -f /etc/ovos_asound.state ]; then
-        rm /etc/ovos_asound.state
-    fi
 
-    echo "option 1 $1"
-    echo "option 2 $2"
     if [[ $1 ]] && [[ -f $1 ]]; then
-        ln -s $1 /etc/pulse/system.pa
-        ln -s $1 /etc/pulse/default.pa
+        PULSE_SYSTEM=$1
     fi
     if [[ $2 ]] && [[ -f $2 ]]; then
-        ln -s $2 /etc/pulse/daemon.conf
+        PULSE_DAEMON=$2
     fi
+    echo "Using .pa file $PULSE_SYSTEM"
+    echo "Using daemon config file $PULSE_DAEMON"
+    ln -s/etc/pulse/system.pa $PULSE_SYSTEM
+    ln -s /etc/pulse/default.pa $PULSE_SYSTEM
+    ln -s /etc/pulse/daemon.conf $PULSE_DAEMON
+    ln -s /etc/pulse/asound.state $ASOUND_STATE
 }
 
 # Main execution
@@ -129,11 +129,12 @@ main() {
         amixer -c "wm8960soundcard" cset numid=50 on
         amixer -c "wm8960soundcard" cset numid=54 on
         amixer -c "wm8960soundcard" cset numid=16 5
-        amixer -c "wm8960soundcard" cset numid=15 4
+        amixer -c "wm8960soundcard" cset numid=15 5
         amixer -c "wm8960soundcard" cset numid=11 120,120
         amixer -c "wm8960soundcard" cset numid=13 120,120
         echo "Configuring button"
         dtoverlay wm8960-button-overlay
+        pulseaudio_config
     fi
 
     if [[ ${detection_results[MARK1]} == true ]] ; then
@@ -151,6 +152,7 @@ main() {
         echo "Resetting Mark-1 faceplate"
         echo "eyes.color=7365993" > /dev/ttyAMA0  # color=soft gray, #706569
         echo "mouth.text=" > /dev/ttyAMA0
+        pulseaudio_config
     fi
 
     if [[ ${detection_results[RESPEAKER4]} == true ]] && [[ ${detection_results[RESPEAKER6]} == false ]] ; then
