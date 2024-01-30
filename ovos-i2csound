@@ -45,10 +45,10 @@ pulseaudio_config() {
         ASOUND_STATE=/var/lib/alsa/default-asound.state
     fi
     if [ -f /etc/pulse/pulseaudio-system.pa ]; then
-        PULSE_SYSTEM=/etc/pulse/pulseaudio-system.pa
+        PULSE_SYSTEM=/etc/pulse/system.pa.d/pulseaudio-system.pa
     fi
     if [ -f /etc/pulse/pulseaudio-daemon.conf ]; then
-        PULSE_DAEMON=/etc/pulse/pulseaudio-daemon.conf
+        PULSE_DAEMON=/etc/pulse/daemon.conf.d/pulseaudio-daemon.conf
     fi
 
     # Remove old configurations
