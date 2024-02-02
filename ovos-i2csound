@@ -38,8 +38,52 @@ detect_i2c_device() {
     fi
 }
 
+pulseaudio_config() {
+    echo "configuring pulseaudio"
+    # Set default configurations
+    if [ -f /var/lib/alsa/default-asound.state ]; then
+        ASOUND_STATE=/var/lib/alsa/default-asound.state
+    fi
+    if [ -f /etc/pulse/system.pa.d/pulseaudio-system.pa ]; then
+        PULSE_SYSTEM=/etc/pulse/system.pa.d/pulseaudio-system.pa
+    fi
+    if [ -f /etc/pulse/daemon.conf.d/pulseaudio-daemon.conf ]; then
+        PULSE_DAEMON=/etc/pulse/daemon.conf.d/pulseaudio-daemon.conf
+    fi
+
+    # Remove old configurations
+    if [ -f /etc/pulse/system.pa ] || [ -L /etc/pulse/system.pa ]; then
+        rm /etc/pulse/system.pa
+    fi
+    if [ -f /etc/pulse/default.pa ] || [ -L /etc/pulse/system.pa ]; then
+        rm /etc/pulse/default.pa
+    fi
+    if [ -f /etc/pulse/daemon.conf ] || [ -L /etc/pulse/daemon.conf ]; then
+        rm /etc/pulse/daemon.conf
+    fi
+    if [ -f /var/lib/alsa/asound.state ] || [ -L /var/lib/alsa/asound.state ]; then
+        rm /var/lib/alsa/asound.state
+    fi
+
+    if [[ $1 ]] && [[ -f $1 ]]; then
+        PULSE_SYSTEM=$1
+    fi
+    if [[ $2 ]] && [[ -f $2 ]]; then
+        PULSE_DAEMON=$2
+    fi
+    echo "Using .pa file $PULSE_SYSTEM"
+    echo "Using daemon config file $PULSE_DAEMON"
+    echo "Using asound.state file $ASOUND_STATE"
+    ln -s $PULSE_SYSTEM /etc/pulse/system.pa
+    ln -s $PULSE_SYSTEM /etc/pulse/default.pa
+    ln -s $PULSE_DAEMON /etc/pulse/daemon.conf
+    ln -s $ASOUND_STATE /var/lib/alsa/asound.state
+}
+
 # Main execution
 main() {
+    # Check for pulseaudio.service and activate the setup if true
+    systemctl --user -M ovos@ --quiet is-active pulseaudio.service || systemctl --quiet is-active pulseaudio.service && USE_PULSE=true
     # Detecting I2C devices
     for device in "${!devices[@]}"; do
         address="${devices[$device]}"
@@ -88,11 +132,14 @@ main() {
         amixer -c "wm8960soundcard" cset numid=50 on
         amixer -c "wm8960soundcard" cset numid=54 on
         amixer -c "wm8960soundcard" cset numid=16 5
-        amixer -c "wm8960soundcard" cset numid=15 4
+        amixer -c "wm8960soundcard" cset numid=15 5
         amixer -c "wm8960soundcard" cset numid=11 120,120
         amixer -c "wm8960soundcard" cset numid=13 120,120
         echo "Configuring button"
         dtoverlay wm8960-button-overlay
+        if [ $USE_PULSE ]; then
+            pulseaudio_config
+        fi
     fi
 
     if [[ ${detection_results[MARK1]} == true ]] ; then
@@ -110,6 +157,9 @@ main() {
         echo "Resetting Mark-1 faceplate"
         echo "eyes.color=7365993" > /dev/ttyAMA0  # color=soft gray, #706569
         echo "mouth.text=" > /dev/ttyAMA0
+        if [ $USE_PULSE ]; then
+            pulseaudio_config
+        fi
     fi
 
     if [[ ${detection_results[RESPEAKER4]} == true ]] && [[ ${detection_results[RESPEAKER6]} == false ]] ; then
@@ -125,6 +175,9 @@ main() {
         amixer -c "seeed4micvoicec" cset numid=6 13
         amixer -c "seeed4micvoicec" cset numid=7 13
         amixer -c "seeed4micvoicec" cset numid=8 13
+        if [ $USE_PULSE ]; then
+            pulseaudio_config "/etc/pulse/default.pa.d/seeed-voicecard-4mic-default.pa" "/etc/pulse/daemon.conf.d/seeed-voicecard-4mic-daemon.conf"
+        fi
     fi
 
     if [[ ${detection_results[RESPEAKER6]} == true ]] && [[ ${detection_results[RESPEAKER4]} == true ]] ; then
@@ -148,6 +201,9 @@ main() {
         amixer -c "seeed8micvoicec" cset numid=14 13
         amixer -c "seeed8micvoicec" cset numid=15 13
         amixer -c "seeed8micvoicec" cset numid=16 13
+        if [ $USE_PULSE ]; then
+            pulseaudio_config "/etc/pulse/default.pa.d/seeed-voicecard-8mic-default.pa" "/etc/pulse/daemon.conf.d/seeed-voicecard-8mic-daemon.conf"
+        fi
     fi
 
     if [[ ${detection_results[ADAFRUIT]} == true ]] ; then
@@ -174,6 +230,9 @@ main() {
         fi
         echo "Configuring buttons"
         dtoverlay sj201-buttons-overlay
+        if [ $USE_PULSE ]; then
+            pulseaudio_config "/etc/pulse/default.pa.d/sj201-default.pa" "/etc/pulse/daemon.conf.d/sj201-daemon.conf"
+        fi
     fi
 
     if [[ ${detection_results[AIYVOICEBONNET]} == true ]] ; then
