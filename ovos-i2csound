@@ -82,6 +82,8 @@ pulseaudio_config() {
 
 # Main execution
 main() {
+    # Check for pulseaudio.service and activate the setup if true
+    systemctl --user -M ovos@ --quiet is-active pulseaudio.service || systemctl --quiet is-active pulseaudio.service && USE_PULSE=true
     # Detecting I2C devices
     for device in "${!devices[@]}"; do
         address="${devices[$device]}"
@@ -135,7 +137,9 @@ main() {
         amixer -c "wm8960soundcard" cset numid=13 120,120
         echo "Configuring button"
         dtoverlay wm8960-button-overlay
-        pulseaudio_config
+        if [ $USE_PULSE ]; then
+            pulseaudio_config
+        fi
     fi
 
     if [[ ${detection_results[MARK1]} == true ]] ; then
@@ -153,7 +157,9 @@ main() {
         echo "Resetting Mark-1 faceplate"
         echo "eyes.color=7365993" > /dev/ttyAMA0  # color=soft gray, #706569
         echo "mouth.text=" > /dev/ttyAMA0
-        pulseaudio_config
+        if [ $USE_PULSE ]; then
+            pulseaudio_config
+        fi
     fi
 
     if [[ ${detection_results[RESPEAKER4]} == true ]] && [[ ${detection_results[RESPEAKER6]} == false ]] ; then
@@ -169,8 +175,9 @@ main() {
         amixer -c "seeed4micvoicec" cset numid=6 13
         amixer -c "seeed4micvoicec" cset numid=7 13
         amixer -c "seeed4micvoicec" cset numid=8 13
-
-        pulseaudio_config "/etc/pulse/default.pa.d/seeed-voicecard-4mic-default.pa" "/etc/pulse/daemon.conf.d/seeed-voicecard-4mic-daemon.conf"
+        if [ $USE_PULSE ]; then
+            pulseaudio_config "/etc/pulse/default.pa.d/seeed-voicecard-4mic-default.pa" "/etc/pulse/daemon.conf.d/seeed-voicecard-4mic-daemon.conf"
+        fi
     fi
 
     if [[ ${detection_results[RESPEAKER6]} == true ]] && [[ ${detection_results[RESPEAKER4]} == true ]] ; then
@@ -194,8 +201,9 @@ main() {
         amixer -c "seeed8micvoicec" cset numid=14 13
         amixer -c "seeed8micvoicec" cset numid=15 13
         amixer -c "seeed8micvoicec" cset numid=16 13
-
-        pulseaudio_config "/etc/pulse/default.pa.d/seeed-voicecard-8mic-default.pa" "/etc/pulse/daemon.conf.d/seeed-voicecard-8mic-daemon.conf"
+        if [ $USE_PULSE ]; then
+            pulseaudio_config "/etc/pulse/default.pa.d/seeed-voicecard-8mic-default.pa" "/etc/pulse/daemon.conf.d/seeed-voicecard-8mic-daemon.conf"
+        fi
     fi
 
     if [[ ${detection_results[ADAFRUIT]} == true ]] ; then
@@ -222,8 +230,9 @@ main() {
         fi
         echo "Configuring buttons"
         dtoverlay sj201-buttons-overlay
-
-        pulseaudio_config "/etc/pulse/default.pa.d/sj201-default.pa" "/etc/pulse/daemon.conf.d/sj201-daemon.conf"
+        if [ $USE_PULSE ]; then
+            pulseaudio_config "/etc/pulse/default.pa.d/sj201-default.pa" "/etc/pulse/daemon.conf.d/sj201-daemon.conf"
+        fi
     fi
 
     if [[ ${detection_results[AIYVOICEBONNET]} == true ]] ; then
