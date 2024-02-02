@@ -73,10 +73,11 @@ pulseaudio_config() {
     fi
     echo "Using .pa file $PULSE_SYSTEM"
     echo "Using daemon config file $PULSE_DAEMON"
+    echo "Using asound.state file $ASOUND_STATE"
     ln -s $PULSE_SYSTEM /etc/pulse/system.pa
     ln -s $PULSE_SYSTEM /etc/pulse/default.pa
     ln -s $PULSE_DAEMON /etc/pulse/daemon.conf
-    ln -s $ASOUND_STATE /etc/pulse/asound.state
+    ln -s $ASOUND_STATE /var/lib/alsa/asound.state
 }
 
 # Main execution
