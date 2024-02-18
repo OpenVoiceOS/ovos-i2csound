@@ -98,8 +98,7 @@ main() {
     if [[ ${detection_results[MARK1]} == true ]] ; then
         echo "Installing and configuring WM8731 based sound HAT"
         dtoverlay proto-codec
-        dtoverlay pi3-disable-bt
-        dtoverlay pi3-miniuart-bt
+        dtoverlay disable-bt
         dtparam audio=off
 
         echo "Configuring board"
@@ -112,8 +111,6 @@ main() {
         amixer -c "sndrpiproto" cset numid=13 on
         amixer -c "sndrpiproto" cset numid=9 on
         echo "Resetting Mark-1 faceplate"
-        # Check for permissions
-        chmod a+rw /dev/ttyAMA0
         echo "eyes.color=7365993" > /dev/ttyAMA0  # color=soft gray, #706569
         echo "mouth.text=" > /dev/ttyAMA0
     fi
@@ -219,6 +216,9 @@ main() {
         amixer -c "aiyvoicebonnet" cset numid=27 on
 
     fi
+
+    # Create an environment variable for use elsewhere
+    export OVOS_I2C_SOUND=
 }
 
 # Run the main function
