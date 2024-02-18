@@ -216,9 +216,6 @@ main() {
         amixer -c "aiyvoicebonnet" cset numid=27 on
 
     fi
-
-    # Create an environment variable for use elsewhere
-    export OVOS_I2C_SOUND=
 }
 
 # Run the main function
