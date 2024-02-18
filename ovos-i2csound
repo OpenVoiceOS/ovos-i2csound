@@ -99,6 +99,7 @@ main() {
         echo "Installing and configuring WM8731 based sound HAT"
         dtoverlay proto-codec
         dtoverlay disable-bt
+        dtoverlay miniuart-bt
         dtparam audio=off
 
         echo "Configuring board"
