@@ -31,6 +31,7 @@ main() {
     local service_dir=/etc/systemd/system
     local script_dir=/usr/libexec
     copy_file "$PWD/i2c.conf" "$mod_dir/i2c.conf"
+    copy_file "$PWD/bcm2835-alsa.conf" "bcm2835-alsa.conf"
     copy_file "$PWD/99-i2c.rules" "$rules_dir/99-i2c.rules"
     copy_file "$PWD/i2csound.service" "$service_dir/i2csound.service"
     copy_file "$PWD/ovos-i2csound" "$script_dir/ovos-i2csound"
