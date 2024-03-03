@@ -98,7 +98,6 @@ main() {
     if [[ ${detection_results[MARK1]} == true ]] ; then
         echo "Installing and configuring WM8731 based sound HAT"
         dtoverlay proto-codec
-        dtoverlay disable-bt
 
         echo "Configuring board"
         sleep 3 # Allow some time to fully initialise the hardware / driver
