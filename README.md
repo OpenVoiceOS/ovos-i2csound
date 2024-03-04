@@ -24,7 +24,9 @@ The `install.sh` script is an auto installer for `ovos-i2csound`.  It will check
 Place the following files in the respective directory, and reboot your system.
 
 `i2c.conf` -> `/etc/modules-load.d/i2c.conf`
+`bcm2835-alsa.conf` -> `/etc/modules-load.d/bcm2835-alsa.conf`
 `i2csound.service` -> `/etc/systemd/system/i2csound.service`
+`i2c_platform.service` -> `/etc/systemd/system/i2c_platform.service`
 `ovos-i2csound` -> `/usr/libexec/ovos-i2csound`
 `99-i2c.rules` -> `/usr/lib/udev/rules.d/99-i2c.rules`
 
