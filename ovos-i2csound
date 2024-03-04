@@ -40,6 +40,9 @@ detect_i2c_device() {
 
 # Main execution
 main() {
+    # Create a variable to hold the detected device name
+    local i2c_device_name
+
     # Detecting I2C devices
     for device in "${!devices[@]}"; do
         address="${devices[$device]}"
@@ -93,6 +96,7 @@ main() {
         amixer -c "wm8960soundcard" cset numid=13 120,120
         echo "Configuring button"
         dtoverlay wm8960-button-overlay
+        i2c_device_name="wm8960"
     fi
 
     if [[ ${detection_results[MARK1]} == true ]] ; then
@@ -111,6 +115,7 @@ main() {
         echo "Resetting Mark-1 faceplate"
         echo "eyes.color=7365993" > /dev/ttyAMA0  # color=soft gray, #706569
         echo "mouth.text=" > /dev/ttyAMA0
+        i2c_device_name="MARK1"
     fi
 
     if [[ ${detection_results[RESPEAKER4]} == true ]] && [[ ${detection_results[RESPEAKER6]} == false ]] ; then
@@ -126,6 +131,7 @@ main() {
         amixer -c "seeed4micvoicec" cset numid=6 13
         amixer -c "seeed4micvoicec" cset numid=7 13
         amixer -c "seeed4micvoicec" cset numid=8 13
+        i2c_device_name="RESPEAKER4"
     fi
 
     if [[ ${detection_results[RESPEAKER6]} == true ]] && [[ ${detection_results[RESPEAKER4]} == true ]] ; then
@@ -149,11 +155,13 @@ main() {
         amixer -c "seeed8micvoicec" cset numid=14 13
         amixer -c "seeed8micvoicec" cset numid=15 13
         amixer -c "seeed8micvoicec" cset numid=16 13
+        i2c_device_name="RESPEAKER6"
     fi
 
     if [[ ${detection_results[ADAFRUIT]} == true ]] ; then
         echo "Installing and configuring Adafruit"
         /usr/sbin/i2cset -y 1 0x4b 30 # Set maximum volume to 30
+        i2c_device_name="ADAFRUIT"
     fi
 
     if [[ ${detection_results[TAS5806]} == true ]] ; then
@@ -175,6 +183,7 @@ main() {
         fi
         echo "Configuring buttons"
         dtoverlay sj201-buttons-overlay
+        i2c_device_name="SJ201"
     fi
 
     if [[ ${detection_results[AIYVOICEBONNET]} == true ]] ; then
@@ -212,8 +221,11 @@ main() {
         amixer -c "aiyvoicebonnet" cset numid=47 on
         amixer -c "aiyvoicebonnet" cset numid=49 on
         amixer -c "aiyvoicebonnet" cset numid=27 on
-
+        i2c_device_name="AIYVOICEBONNET"
     fi
+
+    # Write the detection results to a file
+    echo "$i2c_device_name" > $HOME/.config/mycroft/i2c_platform
 }
 
 # Run the main function
