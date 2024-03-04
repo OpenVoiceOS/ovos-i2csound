@@ -225,7 +225,7 @@ main() {
     fi
 
     # Write the detection results to a file
-    echo "$i2c_device_name" > $HOME/.config/mycroft/i2c_platform
+    echo "$i2c_device_name" > /home/ovos/.config/mycroft/i2c_platform
 }
 
 # Run the main function
