@@ -122,10 +122,10 @@ main() {
         amixer -c "seeed4micvoicec" cset numid=2 222
         amixer -c "seeed4micvoicec" cset numid=3 222
         amixer -c "seeed4micvoicec" cset numid=4 222
-        amixer -c "seeed4micvoicec" cset numid=5 13
-        amixer -c "seeed4micvoicec" cset numid=6 13
-        amixer -c "seeed4micvoicec" cset numid=7 13
-        amixer -c "seeed4micvoicec" cset numid=8 13
+        amixer -c "seeed4micvoicec" cset numid=5 3
+        amixer -c "seeed4micvoicec" cset numid=6 3
+        amixer -c "seeed4micvoicec" cset numid=7 3
+        amixer -c "seeed4micvoicec" cset numid=8 3
     fi
 
     if [[ ${detection_results[RESPEAKER6]} == true ]] && [[ ${detection_results[RESPEAKER4]} == true ]] ; then
