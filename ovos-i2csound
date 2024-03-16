@@ -43,6 +43,11 @@ main() {
     # Create a variable to hold the detected device name
     local i2c_device_name
 
+    # Check for an existing file and remove it if there
+    if [[ -f /home/ovos/.config/mycroft/i2c_platform ]]; then
+        rm -f /home/ovos/.config/mycroft/i2c_platform
+    fi
+
     # Detecting I2C devices
     for device in "${!devices[@]}"; do
         address="${devices[$device]}"
@@ -224,8 +229,10 @@ main() {
         i2c_device_name="AIYVOICEBONNET"
     fi
 
-    # Write the detection results to a file
-    echo "$i2c_device_name" > /home/ovos/.config/mycroft/i2c_platform
+    # Write the detection results to a file only if something is detected
+    if [ $i2c_device_name ]; then
+        echo "$i2c_device_name" > /home/ovos/.config/mycroft/i2c_platform
+    fi
 }
 
 # Run the main function

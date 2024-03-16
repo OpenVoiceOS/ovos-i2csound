@@ -34,7 +34,6 @@ main() {
     copy_file "$PWD/bcm2835-alsa.conf" "$mod_dir/bcm2835-alsa.conf"
     copy_file "$PWD/99-i2c.rules" "$rules_dir/99-i2c.rules"
     copy_file "$PWD/i2csound.service" "$service_dir/i2csound.service"
-    copy_file "$PWD/i2c_platform.service" "$service_dir/i2c_platform.service"
     copy_file "$PWD/ovos-i2csound" "$script_dir/ovos-i2csound"
     chmod +x "${script_dir}/ovos-i2csound"
     systemctl enable i2c_platform.service
