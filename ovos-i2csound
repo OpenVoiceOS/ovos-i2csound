@@ -230,7 +230,7 @@ main() {
     fi
 
     # Write the detection results to a file only if something is detected
-    if [ $i2c_device_name ]; then
+    if [ "$i2c_device_name" ]; then
         echo "$i2c_device_name" > /home/ovos/.config/mycroft/i2c_platform
     fi
 }
