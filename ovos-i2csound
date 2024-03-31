@@ -54,9 +54,10 @@ get_board_version() {
         b="${boards[$board]}"
         if [[ $v =~ "$b" ]]; then
             board_result="$board"
+            break # Exit the loop once the match is found.
         fi
     done
-    }
+}
 # Main execution
 main() {
 
