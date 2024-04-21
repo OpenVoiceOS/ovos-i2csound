@@ -36,6 +36,7 @@ main() {
     copy_file "$PWD/i2csound.service" "$service_dir/i2csound.service"
     copy_file "$PWD/ovos-i2csound" "$script_dir/ovos-i2csound"
     chmod +x "${script_dir}/ovos-i2csound"
+    systemctl enable i2c_platform.service
     echo "Installation complete. Please reboot your system to apply changes."
     }
 # Check for root privileges

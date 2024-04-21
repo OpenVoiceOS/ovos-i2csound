@@ -71,6 +71,13 @@ compare_kernel_version() {
 
 # Main execution
 main() {
+    # Create a variable to hold the detected device name
+    local i2c_device_name
+
+    # Check for an existing file and remove it if there
+    if [[ -f /home/ovos/.config/mycroft/i2c_platform ]]; then
+        rm -f /home/ovos/.config/mycroft/i2c_platform
+    fi
 
     get_board_version
 
@@ -127,6 +134,7 @@ main() {
         amixer -c "wm8960soundcard" cset numid=13 120,120
         echo "Configuring button"
         dtoverlay wm8960-button-overlay
+        i2c_device_name="wm8960"
     fi
 
     if [[ ${detection_results[MARK1]} == true ]] ; then
@@ -145,6 +153,7 @@ main() {
         echo "Resetting Mark-1 faceplate"
         echo "eyes.color=7365993" > /dev/ttyAMA0  # color=soft gray, #706569
         echo "mouth.text=" > /dev/ttyAMA0
+        i2c_device_name="MARK1"
     fi
 
     if [[ ${detection_results[RESPEAKER4]} == true ]] && [[ ${detection_results[RESPEAKER6]} == false ]] ; then
@@ -156,6 +165,10 @@ main() {
         amixer -c "seeed4micvoicec" cset numid=2 222
         amixer -c "seeed4micvoicec" cset numid=3 222
         amixer -c "seeed4micvoicec" cset numid=4 222
+        amixer -c "seeed4micvoicec" cset numid=5 13
+        amixer -c "seeed4micvoicec" cset numid=6 13
+        amixer -c "seeed4micvoicec" cset numid=7 13
+        amixer -c "seeed4micvoicec" cset numid=8 13
         if [[ $board_result == "RPI3" ]]; then
             amixer -c "seeed4micvoicec" cset numid=5 3
             amixer -c "seeed4micvoicec" cset numid=6 3
@@ -167,7 +180,8 @@ main() {
             amixer -c "seeed4micvoicec" cset numid=7 13
             amixer -c "seeed4micvoicec" cset numid=8 13
         fi
-    fi
+        i2c_device_name="RESPEAKER4"
+fi
 
     if [[ ${detection_results[RESPEAKER6]} == true ]] && [[ ${detection_results[RESPEAKER4]} == true ]] ; then
         echo "Installing and configuring ReSpeaker 6mic"
@@ -190,11 +204,13 @@ main() {
         amixer -c "seeed8micvoicec" cset numid=14 13
         amixer -c "seeed8micvoicec" cset numid=15 13
         amixer -c "seeed8micvoicec" cset numid=16 13
+        i2c_device_name="RESPEAKER6"
     fi
 
     if [[ ${detection_results[ADAFRUIT]} == true ]] ; then
         echo "Installing and configuring Adafruit"
         /usr/sbin/i2cset -y 1 0x4b 30 # Set maximum volume to 30
+        i2c_device_name="ADAFRUIT"
     fi
 
     if [[ ${detection_results[TAS5806]} == true ]] ; then
@@ -230,6 +246,8 @@ main() {
             fi
         fi
         echo "Configuring buttons"
+        dtoverlay sj201-buttons-overlay
+        i2c_device_name="SJ201"
         if [[ "$board_result" == "RPI5" ]]; then
             dtoverlay sj201-buttons-overlay-pi5
         else
@@ -272,7 +290,12 @@ main() {
         amixer -c "aiyvoicebonnet" cset numid=47 on
         amixer -c "aiyvoicebonnet" cset numid=49 on
         amixer -c "aiyvoicebonnet" cset numid=27 on
+        i2c_device_name="AIYVOICEBONNET"
+    fi
 
+    # Write the detection results to a file only if something is detected
+    if [ "$i2c_device_name" ]; then
+        echo "$i2c_device_name" > /home/ovos/.config/mycroft/i2c_platform
     fi
 }
 
