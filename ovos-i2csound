@@ -73,7 +73,7 @@ compare_kernel_version() {
 main() {
     # Create a variable to hold the detected device name
     local i2c_device_name
-    local i2c_device_file=/etc/mycroft/i2c_platform
+    local i2c_device_file=$HOME/.config/mycroft/i2c_platform
 
     # Check for an existing file and remove it if there
     if [[ -f $i2c_device_file ]]; then
