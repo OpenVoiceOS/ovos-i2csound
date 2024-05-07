@@ -29,6 +29,8 @@ Place the following files in the respective directory, and reboot your system.
 `ovos-i2csound` -> `/usr/libexec/ovos-i2csound`
 `99-i2c.rules` -> `/usr/lib/udev/rules.d/99-i2c.rules`
 
+Create the directory for ovos-i2csound to store a variable in
+`sudo mkdir /etc/OpenVoiceOS`
 
 ## Usage
 
