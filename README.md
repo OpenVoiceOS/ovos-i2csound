@@ -29,4 +29,15 @@ Place the following files in the respective directory, and reboot your system.
 `ovos-i2csound` -> `/usr/libexec/ovos-i2csound`
 `99-i2c.rules` -> `/usr/lib/udev/rules.d/99-i2c.rules`
 
+
+## Usage
+
+When installed and enabled, this script will run at boot time and try to detect the attached card if any.  If a supported card is detected, ovos-i2csound will setup Alsa to the correct values for that card.
+
+Also, as an added feature, when a card is detected, a file will be created at `/etc/OpenVoiceOS/i2c_platform`.  It contains a single line with the name of the card detected.
+
+This file can be read and used as validation for plugins, or any other use you may find.
+
+If the file does not exist, ovos-i2csound ran, but did not find a supported card.
+
 Issues can be made [here](https://github.com/OpenVoiceOS/ovos-i2csound/issues/)
