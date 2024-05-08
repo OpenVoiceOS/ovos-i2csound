@@ -296,9 +296,8 @@ fi
 
     # Write the detection results to a file only if something is detected
     if [ "$i2c_device_name" ]; then
-        if [[ -d dirname $i2c_device_file ]]; then
-            echo "$i2c_device_name" > $i2c_device_file
-        fi
+        [ -d /etc/OpenVoiceOS ] || mkdir /etc/OpenVoiceOS
+        echo "$i2c_device_name" > $i2c_device_file
     fi
 }
 
