@@ -73,10 +73,11 @@ compare_kernel_version() {
 main() {
     # Create a variable to hold the detected device name
     local i2c_device_name
+    local i2c_device_file="/etc/OpenVoiceOS/i2c_platform"
 
     # Check for an existing file and remove it if there
-    if [[ -f /home/ovos/.config/mycroft/i2c_platform ]]; then
-        rm -f /home/ovos/.config/mycroft/i2c_platform
+    if [[ -f $i2c_device_file ]]; then
+        rm -f $i2c_device_file
     fi
 
     get_board_version
@@ -295,7 +296,9 @@ fi
 
     # Write the detection results to a file only if something is detected
     if [ "$i2c_device_name" ]; then
-        echo "$i2c_device_name" > /home/ovos/.config/mycroft/i2c_platform
+        if [[ -d dirname $i2c_device_file ]]; then
+            echo "$i2c_device_name" > $i2c_device_file
+        fi
     fi
 }
 

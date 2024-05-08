@@ -37,6 +37,9 @@ main() {
     copy_file "$PWD/ovos-i2csound" "$script_dir/ovos-i2csound"
     chmod +x "${script_dir}/ovos-i2csound"
     systemctl enable i2c_platform.service
+    if [[ ! -d /etc/OpenVoiceOS ]]; then
+        mkdir /etc/OpenVoiceOS
+    fi
     echo "Installation complete. Please reboot your system to apply changes."
     }
 # Check for root privileges
