@@ -135,7 +135,7 @@ main() {
         amixer -c "wm8960soundcard" cset numid=13 120,120
         echo "Configuring button"
         dtoverlay wm8960-button-overlay
-        i2c_device_name="wm8960"
+        i2c_device_name="WM8960"
     fi
 
     if [[ ${detection_results[MARK1]} == true ]] ; then
@@ -238,6 +238,7 @@ fi
             /usr/bin/sj201-reset-led
             # Reset FAN to low speed
             /usr/sbin/i2cset -a -y 1 0x04 101 30 i
+            i2c_device_name="SJ201V6"
         else
             echo "Assume revision-10 SJ-201 board"
             if [[ "$board_result" == "RPI5" ]]; then
@@ -245,10 +246,10 @@ fi
             else
                 dtoverlay sj201-rev10-pwm-fan-overlay
             fi
+            i2c_device_name="SJ201V10"
         fi
         echo "Configuring buttons"
         dtoverlay sj201-buttons-overlay
-        i2c_device_name="SJ201"
         if [[ "$board_result" == "RPI5" ]]; then
             dtoverlay sj201-buttons-overlay-pi5
         else
