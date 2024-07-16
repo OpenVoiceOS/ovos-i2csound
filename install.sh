@@ -36,7 +36,7 @@ main() {
     copy_file "$PWD/i2csound.service" "$service_dir/i2csound.service"
     copy_file "$PWD/ovos-i2csound" "$script_dir/ovos-i2csound"
     chmod +x "${script_dir}/ovos-i2csound"
-    systemctl enable i2c_sound.service
+    systemctl enable i2csound.service
     if [[ ! -d /etc/OpenVoiceOS ]]; then
         mkdir /etc/OpenVoiceOS
     fi
