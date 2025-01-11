@@ -71,9 +71,36 @@ compare_kernel_version() {
 
 # Check for a Mark 1 device
 check_mark_1() {
-    (read -n128 -t3 RESP < /dev/ttyAMA0; if [[ $RESP == *"Command"* ]]; then return 0; else return 1; fi;)&
-    echo "system.version" > /dev/ttyAMA0
-    wait
+    local timeout=3
+    local dev="/dev/ttyAMA0"
+    
+    # Check if device exists and is accessible
+    if [[ ! -c "$dev" ]] || [[ ! -r "$dev" ]] || [[ ! -w "$dev" ]]; then
+        echo "Error: $dev not accessible" >&2
+        return 1
+    fi
+    
+    # Use file descriptor to ensure proper cleanup
+    exec 3<>"$dev"
+    
+    # Clear any pending input
+    read -t 1 -n 1000 <&3 || true
+    
+    # Send command
+    echo "system.version" >&3
+    
+    # Read response with timeout
+    read -t "$timeout" -n 128 RESP <&3
+    local status=$?
+    
+    # Cleanup
+    exec 3>&-
+    
+    # Check response
+    if [[ $status -eq 0 ]] && [[ "$RESP" == *"Command"* ]]; then
+        return 0
+    fi
+    return 1
 }
 
 # Main execution
