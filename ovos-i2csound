@@ -69,6 +69,13 @@ compare_kernel_version() {
     fi
 }
 
+# Check for a Mark 1 device
+check_mark_1() {
+    (read -n128 -t3 RESP < /dev/ttyAMA0; if [[ $RESP == *"Command"* ]]; then return 0; else return 1; fi;)&
+    echo "system.version" > /dev/ttyAMA0
+    wait
+}
+
 # Main execution
 main() {
     # Create a variable to hold the detected device name
@@ -96,8 +103,7 @@ main() {
     # Handling hardware-specific configurations
     if [[ ${detection_results[WM8XXX]} == true ]] ; then
         echo "WM8XXX based HAT found"
-        atmega328p=$(avrdude -p atmega328p -C /etc/avrdude-gpio.conf -c linuxgpio -U signature:r:-:i -F 2>/dev/null | head -n1)
-        if [ "${atmega328p}" == ":030000001E950F3B" ] ; then
+        if [ check_mark_1 ] ; then
             detection_results[MARK1]=true
             echo "Mark-1 enclosure $MARK1"
         else
