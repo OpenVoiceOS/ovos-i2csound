@@ -98,6 +98,7 @@ check_mark_1() {
     
     # Check response
     if [[ $status -eq 0 ]] && [[ "$RESP" == *"Command"* ]]; then
+        echo "true"
         return 0
     fi
     return 1
@@ -130,7 +131,8 @@ main() {
     # Handling hardware-specific configurations
     if [[ ${detection_results[WM8XXX]} == true ]] ; then
         echo "WM8XXX based HAT found"
-        if [ check_mark_1 ] ; then
+        mk1=$(check_mark_1)
+        if [[ "$mk1" == "true" ]]; then
             detection_results[MARK1]=true
             echo "Mark-1 enclosure $MARK1"
         else
