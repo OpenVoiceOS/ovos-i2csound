@@ -109,22 +109,14 @@ set_default_sink_mark_1() {
   MK1_CARD_NAME="snd_rpi_proto"
 
   # Step 1: Extract the card name or identifier
-  CARD_INFO=$(aplay -l | grep "$MK1_CARD_NAME" | awk '{print $2}')
-  echo "Card info: $CARD_INFO"
+  CARD_NUMBER=$(aplay -l | grep "$MK1_CARD_NAME" | awk '{print $2}' | cut -d':' -f1)
+  echo "Card number: $CARD_NUMBER"
 
-  # Step 2: Set the default sink name
-  MK1_SINK_NAME="alsa_output.platform-soc_sound.stereo-fallback"
-
-  # Step 3: Check if pactl is available
-  if command -v pactl > /dev/null 2>&1; then
-      # Step 4: Set the default sink if the card was found
-      if [ -n "$CARD_INFO" ]; then
-          pactl set-default-sink "$MK1_SINK_NAME"
-          echo "Default sink set to: $MK1_SINK_NAME"
-      else
-          echo "No matching card found for: $MK1_CARD_NAME"
-      fi
-  fi
+  # Step 2: Set ALSA default sound card
+  # Update the default ALSA configuration to use the MK1 card
+  echo "defaults.pcm.card $CARD_NUMBER" > /etc/asound.conf
+  echo "defaults.ctl.card $CARD_NUMBER" >> /etc/asound.conf
+  echo "ALSA default card set to: $CARD_NUMBER"
 }
 
 # Main execution
