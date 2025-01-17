@@ -104,21 +104,6 @@ check_mark_1() {
     return 1
 }
 
-# Make the mk1 soundcard the default
-set_default_sink_mark_1() {
-  MK1_CARD_NAME="snd_rpi_proto"
-
-  # Step 1: Extract the card name or identifier
-  CARD_NUMBER=$(aplay -l | grep "$MK1_CARD_NAME" | awk '{print $2}' | cut -d':' -f1)
-  echo "Card number: $CARD_NUMBER"
-
-  # Step 2: Set ALSA default sound card
-  # Update the default ALSA configuration to use the MK1 card
-  echo "defaults.pcm.card $CARD_NUMBER" > /etc/asound.conf
-  echo "defaults.ctl.card $CARD_NUMBER" >> /etc/asound.conf
-  echo "ALSA default card set to: $CARD_NUMBER"
-}
-
 # Main execution
 main() {
     # Create a variable to hold the detected device name
@@ -205,8 +190,12 @@ main() {
         echo "eyes.color=7365993" > /dev/ttyAMA0  # color=soft gray, #706569
         echo "mouth.text=" > /dev/ttyAMA0
         i2c_device_name="MARK1"
-
-        set_default_sink_mark_1
+        MK1_CARD_NAME="snd_rpi_proto"
+        CARD_NUMBER=$(aplay -l | grep "$MK1_CARD_NAME" | awk '{print $2}' | cut -d':' -f1)
+        # Update the default ALSA configuration to use the MK1 card
+        echo "defaults.pcm.card $CARD_NUMBER" > /etc/asound.conf
+        echo "defaults.ctl.card $CARD_NUMBER" >> /etc/asound.conf
+        echo "ALSA default card set to: $CARD_NUMBER"
     fi
 
     if [[ ${detection_results[RESPEAKER4]} == true ]] && [[ ${detection_results[RESPEAKER6]} == false ]] ; then
