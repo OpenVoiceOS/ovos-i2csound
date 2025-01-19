@@ -61,7 +61,7 @@ get_board_version() {
 
 # Better version comparison
 sort_version() {
-    [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" != "$2" ]
+    [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" != "$1" ]
 }
 
 # Checks for kernal compat
