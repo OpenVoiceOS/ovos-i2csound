@@ -59,10 +59,15 @@ get_board_version() {
     done
 }
 
+# Better version comparison
+sort_version() {
+    [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" != "$1" ]
+}
+
 # Checks for kernal compat
 compare_kernel_version() {
-    current_kernel=$(uname -r | sed -re 's/(^[0-9]*\.[0-9]*\.[0-9]*-[0-9]*)(.*)/\1/')
-    if [[ "$current_kernel" < "$1" ]]; then
+    current_kernel=$(uname -r | cut -d '-' -f1)
+    if sort_version "$current_kernel" "$1"; then
         return 0
     else
         return 1
@@ -254,7 +259,7 @@ fi
         # Initializing XMOS xvf3510
 
         # Check for kernel version
-        if $(compare_kernel_version "6.6"); then
+        if $compare_kernel_version "6.6"; then
             dtoverlay xvf3510
         else
             if [[ "$board_result" == "RPI5" ]]; then
