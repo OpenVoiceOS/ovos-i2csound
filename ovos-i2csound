@@ -33,6 +33,7 @@ declare -A devices=(
     [TAS5806]=2f
     [SJ201LED]=04
     [AIYVOICEBONNET]=52
+    [HIFIBERRYPRO]=4d
     )
 
 declare -A detection_results
@@ -259,7 +260,7 @@ fi
         # Initializing XMOS xvf3510
 
         # Check for kernel version
-        if $compare_kernel_version "6.6"; then
+        if $(compare_kernel_version "6.6"); then
             dtoverlay xvf3510
         else
             if [[ "$board_result" == "RPI5" ]]; then
@@ -334,6 +335,15 @@ fi
         amixer -c "aiyvoicebonnet" cset numid=27 on
         i2c_device_name="AIYVOICEBONNET"
     fi
+    
+    if [[ ${detection_results[HIFIBERRYPRO]} == true ]] ; then
+        echo "Installing HiFi Berry Pro"
+        if $(compare_kernel_version "6.1.77"); then
+            dtoverlay hifiberry-dacplus
+        else
+            dtoverlay hifiberry-dacplus-pro
+        fi
+        i2c_device_name="HIFIBERRYPRO"
 
     # Write the detection results to a file only if something is detected
     if [ "$i2c_device_name" ]; then
