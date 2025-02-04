@@ -344,6 +344,7 @@ fi
             dtoverlay hifiberry-dacplus-pro
         fi
         i2c_device_name="HIFIBERRYPRO"
+    fi
 
     # Write the detection results to a file only if something is detected
     if [ "$i2c_device_name" ]; then
