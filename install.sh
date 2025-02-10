@@ -25,7 +25,13 @@ copy_file() {
 # Main installation function
 main() {
     echo "Starting installation process..."
-    install_package i2c-tools
+    if ! dpkg -s i2c-tools &>/dev/null; then
+        echo "installing i2c-tools"
+        install_package i2c-tools
+    else
+        echo "i2c-tools already installed"
+    fi
+    
     local mod_dir=/etc/modules-load.d
     local rules_dir=/usr/lib/udev/rules.d
     local service_dir=/etc/systemd/system
