@@ -345,12 +345,12 @@ fi
             dtoverlay hifiberry-dacplus-pro
         fi
         i2c_device_name="HIFIBERRYPRO"
-    fi
     
-    if [[ ${detection_results[HIFIBERRYAMP]} == true ]] ; then
-        echo "Enabling hifi berry headphone jack"
-        /usr/sbin/i2cset -y 1 0x60 0x01 0xc0
-        /usr/sbin/i2cset -y 1 0x60 0x02 0x31
+        if [[ ${detection_results[HIFIBERRYAMP]} == true ]] ; then
+            echo "Enabling hifi berry headphone jack"
+            /usr/sbin/i2cset -y 1 0x60 0x01 0xc0
+            /usr/sbin/i2cset -y 1 0x60 0x02 0x31
+        fi
     fi
 
     # Write the detection results to a file only if something is detected
