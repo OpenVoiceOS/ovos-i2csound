@@ -25,7 +25,7 @@ copy_file() {
 # Main installation function
 main() {
     echo "Starting installation process..."
-    if dpkg -s i2c-tools &>/dev/null; then
+    if ! dpkg -s i2c-tools &>/dev/null; then
         echo "installing i2c-tools"
         install_package i2c-tools
     else
