@@ -42,7 +42,8 @@ declare -A detection_results
 # Detects the presence of an I2C device at the specified address range
 detect_i2c_device() {
     local address="0x$1"
-    if i2cdetect -y -a 1 "$address" "$address" | grep -qE "($1|UU)"; then
+    local row=$(printf "%02x" $((16#$1 & 0xf0)))
+    if i2cdetect -y -a 1 "$address" "$address" | grep "^$row" | grep -qE "( $1 | UU )"; then
         return 0  # true
     else
         return 1  # false
@@ -354,10 +355,12 @@ fi
     fi
 
     # Write the detection results to a file only if something is detected
-    if [ "$i2c_device_name" ]; then
-        [ -d /etc/OpenVoiceOS ] || mkdir /etc/OpenVoiceOS
-        echo "$i2c_device_name" > $i2c_device_file
-    fi
+    if [[ -n "$i2c_device_name" ]]; then
+        if [[ -d "$(dirname "$i2c_device_file")" ]]; then
+            echo "$i2c_device_name" > "$i2c_device_file" || echo "Error: Failed to write to $i2c_device_file" >&2
+        else
+            echo "Error: Directory $(dirname "$i2c_device_file") does not exist" >&2
+        fi
 }
 
 # Run the main function
