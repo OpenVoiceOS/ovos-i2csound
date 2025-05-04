@@ -33,6 +33,8 @@ declare -A devices=(
     [TAS5806]=2f
     [SJ201LED]=04
     [AIYVOICEBONNET]=52
+    [HIFIBERRYPRO]=4d
+    [HIFIBERRYAMP]=60
     )
 
 declare -A detection_results
@@ -60,14 +62,54 @@ get_board_version() {
     done
 }
 
+# Better version comparison
+sort_version() {
+    [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" != "$1" ]
+}
+
 # Checks for kernal compat
 compare_kernel_version() {
-    current_kernel=$(uname -r | sed -re 's/(^[0-9]*\.[0-9]*\.[0-9]*-[0-9]*)(.*)/\1/')
-    if [[ "$current_kernel" < "$1" ]]; then
+    current_kernel=$(uname -r | cut -d '-' -f1)
+    if sort_version "$current_kernel" "$1"; then
         return 0
     else
         return 1
     fi
+}
+
+# Check for a Mark 1 device
+check_mark_1() {
+    local timeout=3
+    local dev="/dev/ttyAMA0"
+    
+    # Check if device exists and is accessible
+    if [[ ! -c "$dev" ]] || [[ ! -r "$dev" ]] || [[ ! -w "$dev" ]]; then
+        echo "Error: $dev not accessible" >&2
+        return 1
+    fi
+    
+    # Use file descriptor to ensure proper cleanup
+    exec 3<>"$dev"
+    
+    # Clear any pending input
+    read -t 1 -n 1000 <&3 || true
+    
+    # Send command
+    echo "system.version" >&3
+    
+    # Read response with timeout
+    read -t "$timeout" -n 128 RESP <&3
+    local status=$?
+    
+    # Cleanup
+    exec 3>&-
+    
+    # Check response
+    if [[ $status -eq 0 ]] && [[ "$RESP" == *"Command"* ]]; then
+        echo "true"
+        return 0
+    fi
+    return 1
 }
 
 # Main execution
@@ -97,8 +139,8 @@ main() {
     # Handling hardware-specific configurations
     if [[ ${detection_results[WM8XXX]} == true ]] ; then
         echo "WM8XXX based HAT found"
-        atmega328p=$(avrdude -p atmega328p -C /etc/avrdude-gpio.conf -c linuxgpio -U signature:r:-:i -F 2>/dev/null | head -n1)
-        if [ "${atmega328p}" == ":030000001E950F3B" ] ; then
+        mk1=$(check_mark_1)
+        if [[ "$mk1" == "true" ]]; then
             detection_results[MARK1]=true
             echo "Mark-1 enclosure $MARK1"
         else
@@ -295,6 +337,22 @@ fi
         amixer -c "aiyvoicebonnet" cset numid=27 on
         i2c_device_name="AIYVOICEBONNET"
     fi
+    
+    if [[ ${detection_results[HIFIBERRYPRO]} == true ]] ; then
+        echo "Installing HiFi Berry Pro"
+        if $(compare_kernel_version "6.1.77"); then
+            dtoverlay hifiberry-dacplus
+        else
+            dtoverlay hifiberry-dacplus-pro
+        fi
+        i2c_device_name="HIFIBERRYPRO"
+    
+        if [[ ${detection_results[HIFIBERRYAMP]} == true ]] ; then
+            echo "Enabling hifi berry headphone jack"
+            /usr/sbin/i2cset -y 1 0x60 0x01 0xc0
+            /usr/sbin/i2cset -y 1 0x60 0x02 0x31
+        fi
+    fi
 
     # Write the detection results to a file only if something is detected
     if [[ -n "$i2c_device_name" ]]; then
@@ -303,12 +361,6 @@ fi
         else
             echo "Error: Directory $(dirname "$i2c_device_file") does not exist" >&2
         fi
-    fi
-#     if [ "$i2c_device_name" ]; then
-#         if [[ -d dirname $i2c_device_file ]]; then
-#             echo "$i2c_device_name" > $i2c_device_file
-#         fi
-#     fi
 }
 
 # Run the main function
