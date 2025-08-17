@@ -129,8 +129,11 @@ main() {
         echo "WM8XXX based HAT found"
         mk1=$(check_mark_1)
         if [[ "$mk1" == "true" ]]; then
+<<<<<<< HEAD
 #         atmega328p=$(avrdude -p atmega328p -C /etc/avrdude-gpio.conf -c linuxgpio -U signature:r:-:i -F 2>/dev/null | head -n1)
 #         if [ "${atmega328p}" == ":030000001E950F3B" ] ; then
+=======
+>>>>>>> e2af2b36e849b943e116f26380ef4f81b43737f8
             detection_results[MARK1]=true
             echo "Mark-1 enclosure $MARK1"
         else
@@ -330,6 +333,22 @@ main() {
         amixer -c "aiyvoicebonnet" cset numid=27 on
         i2c_device_name="AIYVOICEBONNET"
     fi
+    
+    if [[ ${detection_results[HIFIBERRYPRO]} == true ]] ; then
+        echo "Installing HiFi Berry Pro"
+        if $(compare_kernel_version "6.1.77"); then
+            dtoverlay hifiberry-dacplus
+        else
+            dtoverlay hifiberry-dacplus-pro
+        fi
+        i2c_device_name="HIFIBERRYPRO"
+    
+        if [[ ${detection_results[HIFIBERRYAMP]} == true ]] ; then
+            echo "Enabling hifi berry headphone jack"
+            /usr/sbin/i2cset -y 1 0x60 0x01 0xc0
+            /usr/sbin/i2cset -y 1 0x60 0x02 0x31
+        fi
+    fi
 
     if [[ ${detection_results[HIFIBERRYPRO]} == true ]] ; then
         echo "Installing HiFi Berry Pro"
@@ -352,5 +371,6 @@ main() {
         fi
     fi
 }
+
 # Run the main function
 main
