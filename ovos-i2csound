@@ -60,6 +60,41 @@ get_board_version() {
     done
 }
 
+# Check for a Mark 1 device
+check_mark_1() {
+    local timeout=3
+    local dev="/dev/ttyAMA0"
+
+    # Check if device exists and is accessible
+    if [[ ! -c "$dev" ]] || [[ ! -r "$dev" ]] || [[ ! -w "$dev" ]]; then
+        echo "Error: $dev not accessible" >&2
+        return 1
+    fi
+
+    # Use file descriptor to ensure proper cleanup
+    exec 3<>"$dev"
+
+    # Clear any pending input
+    read -t 1 -n 1000 <&3 || true
+
+    # Send command
+    echo "system.version" >&3
+
+    # Read response with timeout
+    read -t "$timeout" -n 128 RESP <&3
+    local status=$?
+
+    # Cleanup
+    exec 3>&-
+
+    # Check response
+    if [[ $status -eq 0 ]] && [[ "$RESP" == *"Command"* ]]; then
+        echo "true"
+        return 0
+    fi
+    return 1
+}
+
 # Main execution
 main() {
     # Create a variable to hold the detected device name
@@ -90,8 +125,10 @@ main() {
     # Handling hardware-specific configurations
     if [[ ${detection_results[WM8XXX]} == true ]] ; then
         echo "WM8XXX based HAT found"
-        atmega328p=$(avrdude -p atmega328p -C /etc/avrdude-gpio.conf -c linuxgpio -U signature:r:-:i -F 2>/dev/null | head -n1)
-        if [ "${atmega328p}" == ":030000001E950F3B" ] ; then
+        mk1=$(check_mark_1)
+        if [[ "$mk1" == "true" ]]; then
+#         atmega328p=$(avrdude -p atmega328p -C /etc/avrdude-gpio.conf -c linuxgpio -U signature:r:-:i -F 2>/dev/null | head -n1)
+#         if [ "${atmega328p}" == ":030000001E950F3B" ] ; then
             detection_results[MARK1]=true
             echo "Mark-1 enclosure $MARK1"
         else
