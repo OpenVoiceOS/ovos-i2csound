@@ -331,22 +331,6 @@ main() {
 
     if [[ ${detection_results[HIFIBERRYPRO]} == true ]] ; then
         echo "Installing HiFi Berry Pro"
-        if $(compare_kernel_version "6.1.77"); then
-            dtoverlay hifiberry-dacplus
-        else
-            dtoverlay hifiberry-dacplus-pro
-        fi
-        i2c_device_name="HIFIBERRYPRO"
-
-        if [[ ${detection_results[HIFIBERRYAMP]} == true ]] ; then
-            echo "Enabling hifi berry headphone jack"
-            /usr/sbin/i2cset -y 1 0x60 0x01 0xc0
-            /usr/sbin/i2cset -y 1 0x60 0x02 0x31
-        fi
-    fi
-
-    if [[ ${detection_results[HIFIBERRYPRO]} == true ]] ; then
-        echo "Installing HiFi Berry Pro"
         dtoverlay hifiberry-dacplus-pro
         i2c_device_name="HIFIBERRYPRO"
 
