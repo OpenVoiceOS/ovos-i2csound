@@ -1,45 +1,50 @@
 # ovos-i2csound
-Script for i2c HAT detection and configuration on a Raspberry Pi
 
-**Scripts in this repo require sudo access to use and install**
+ovos-i2csound detects and configures i2c sound HATs on a Raspberry Pi. It runs at boot, finds the attached card, and sets up ALSA for that card.
 
-## Simple Installation
-*currently only apt based OS*
+**The scripts in this repo need sudo access to run and install.**
 
-Clone this repository.
-`git clone https://github.com/OpenVoiceOS/ovos-i2csound`
-Change into the `ovos-i2csound` directory.
-`cd ovos-i2csound`
-Run the install script.
-`sudo ./install.sh`
-Reboot for the changes to take effect.
+## Install
 
-## Installation Explained
-This script does several things to enable auto detection of a variety of `i2c` sound cards for the Raspberry Pi. (A list of supported devices, or soon to be supported devices can be found in the `ovos-i2csound` script) [PR's are always welcome](https://github.com/OpenVoiceOS/ovos-i2csound/pulls/) to support more devices.
+The install script works on apt-based systems only.
 
-### install.sh
-The `install.sh` script is an auto installer for `ovos-i2csound`.  It will check for the required apt packages and install them if needed.  It then copies the rest of the scripts used to the required directories on the host system.  After installation, it is safe to delete this directory.
+1. Clone this repository: `git clone https://github.com/OpenVoiceOS/ovos-i2csound`
+2. Change into the `ovos-i2csound` directory: `cd ovos-i2csound`
+3. Run the install script: `sudo ./install.sh`
+4. Reboot for the changes to take effect.
 
-### Manual Installation
-Place the following files in the respective directory, and reboot your system.
+### What the install script does
 
-`i2c.conf` -> `/etc/modules-load.d/i2c.conf`
-`bcm2835-alsa.conf` -> `/etc/modules-load.d/bcm2835-alsa.conf`
-`i2csound.service` -> `/etc/systemd/system/i2csound.service`
-`ovos-i2csound` -> `/usr/libexec/ovos-i2csound`
-`99-i2c.rules` -> `/usr/lib/udev/rules.d/99-i2c.rules`
+The `install.sh` script installs `ovos-i2csound`. It checks for the required apt packages and installs any that are missing. It then copies the rest of the scripts to the required directories on the host system. After installation, you can delete this directory.
 
-Create the directory for ovos-i2csound to store a variable in
-`sudo mkdir /etc/OpenVoiceOS`
+### Manual install
+
+Instead of running `install.sh`, you can place these files by hand and reboot:
+
+| File | Target |
+| --- | --- |
+| `i2c.conf` | `/etc/modules-load.d/i2c.conf` |
+| `bcm2835-alsa.conf` | `/etc/modules-load.d/bcm2835-alsa.conf` |
+| `i2csound.service` | `/etc/systemd/system/i2csound.service` |
+| `ovos-i2csound` | `/usr/libexec/ovos-i2csound` |
+| `99-i2c.rules` | `/usr/lib/udev/rules.d/99-i2c.rules` |
+
+Also create the directory ovos-i2csound uses to store a variable: `sudo mkdir /etc/OpenVoiceOS`
 
 ## Usage
 
-When installed and enabled, this script will run at boot time and try to detect the attached card if any.  If a supported card is detected, ovos-i2csound will setup Alsa to the correct values for that card.
+Once installed and enabled, ovos-i2csound runs at boot and tries to detect the attached card, if any. If it detects a supported card, it sets up ALSA with the correct values for that card. The `ovos-i2csound` script lists the supported devices and the devices planned for support. [Pull requests are welcome](https://github.com/OpenVoiceOS/ovos-i2csound/pulls/) to add more devices.
 
-Also, as an added feature, when a card is detected, a file will be created at `/etc/OpenVoiceOS/i2c_platform`.  It contains a single line with the name of the card detected.
+When ovos-i2csound detects a card, it also creates `/etc/OpenVoiceOS/i2c_platform`. This file holds a single line with the name of the detected card. Plugins, or any other program, can read this file to check which card is present. If the file does not exist, ovos-i2csound ran but did not find a supported card.
 
-This file can be read and used as validation for plugins, or any other use you may find.
+Report issues [here](https://github.com/OpenVoiceOS/ovos-i2csound/issues/).
 
-If the file does not exist, ovos-i2csound ran, but did not find a supported card.
+## Related projects
 
-Issues can be made [here](https://github.com/OpenVoiceOS/ovos-i2csound/issues/)
+- [OpenVoiceOS/ovos-PHAL-plugin-dotstar](https://github.com/OpenVoiceOS/ovos-PHAL-plugin-dotstar) — PHAL plugin for DotStar LED rings on Raspberry Pi devices.
+- [OpenVoiceOS/ovos-PHAL-plugin-mk2-v6-fan-control](https://github.com/OpenVoiceOS/ovos-PHAL-plugin-mk2-v6-fan-control) — PHAL plugin for fan control on Mark 2 v6 hardware.
+- [OpenVoiceOS/ovos-tools](https://github.com/OpenVoiceOS/ovos-tools) — command-line tools for OVOS devices.
+
+## License
+
+See [LICENSE](LICENSE).
