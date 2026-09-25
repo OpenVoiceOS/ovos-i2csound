@@ -361,6 +361,7 @@ fi
         else
             echo "Error: Directory $(dirname "$i2c_device_file") does not exist" >&2
         fi
+    fi
 }
 
 # Run the main function
