@@ -22,11 +22,47 @@ mapfile -t sh_files < <(find . -path ./.git -prune -o -name '*.sh' -print)
 # any text file with a line beginning `#!` that mentions sh or bash is
 # classified as a shell script: a fenced ```bash example in README.md was
 # enough to hand the markdown to bash -n, which then failed on a table row
-# the editor never touched. awk reads line 1 and leaves.
-mapfile -t shebang_files < <(
+# the editor never touched.
+#
+# The interpreter is read as a name, not as a suffix. Matching ".*sh" makes
+# dash, zsh, ksh, tcsh and fish all look like bash; anchoring to a path
+# component instead loses `#!/usr/bin/env bash`, so both forms are named.
+# Anything else that carries a shell shebang is listed and NOT checked,
+# because `bash -n` is the wrong parser for it and shellcheck refuses zsh and
+# fish outright (SC1071). Listing them is the point: a file this gate drops
+# silently is a file nobody knows is unchecked.
+_classify='
+FNR == 1 {
+    if ($0 !~ /^#!/) { nextfile }
+    line = substr($0, 3)
+    n = split(line, word, /[[:space:]]+/)
+    i = 1
+    while (i <= n && word[i] == "") { i++ }
+    interp = word[i]
+    sub(/.*\//, "", interp)
+    if (interp == "env") {
+        i++
+        while (i <= n && substr(word[i], 1, 1) == "-") { i++ }
+        interp = word[i]
+        sub(/.*\//, "", interp)
+    }
+    if (interp == "sh" || interp == "bash") { print "bash\t" FILENAME }
+    else if (interp ~ /^(dash|ash|ksh|zsh|csh|tcsh|fish)$/) { print "other\t" FILENAME }
+}
+FNR > 1 { nextfile }
+'
+mapfile -t _classified < <(
     find . -path ./.git -prune -o -type f ! -name '*.sh' -print0 \
-    | xargs -0 -r awk 'FNR==1 && /^#!.*(ba)?sh([[:space:]]|$)/ {print FILENAME}
-                       FNR>1 {nextfile}' 2>/dev/null || true)
+    | xargs -0 -r awk "$_classify" 2>/dev/null || true)
+
+shebang_files=()
+other_shells=()
+for _row in "${_classified[@]}"; do
+    case "$_row" in
+        bash*)  shebang_files+=("${_row#*$'\t'}") ;;
+        other*) other_shells+=("${_row#*$'\t'}") ;;
+    esac
+done
 
 files=("${sh_files[@]}" "${shebang_files[@]}")
 
@@ -60,6 +96,10 @@ if [ "${#files[@]}" -lt 2 ] || [ "${#shebang_files[@]}" -lt 1 ] \
 fi
 
 echo "Checking ${#sh_files[@]} *.sh files and ${#shebang_files[@]} shebang scripts"
+if [ "${#other_shells[@]}" -gt 0 ]; then
+    echo "Not checked, not bash (bash -n is the wrong parser for these):"
+    printf '  %s\n' "${other_shells[@]}"
+fi
 
 # A syntax error means the script does not run at all.
 for f in "${files[@]}"; do
