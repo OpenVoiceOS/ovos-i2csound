@@ -1,0 +1,19 @@
+name: Lint
+
+# This repository ships no Python package: two shell scripts, a systemd unit,
+# a udev rule and two configuration files. So this caller runs actionlint over
+# the workflow files and nothing else. ruff has no file to read here, and a
+# ruff run that matches no file reports "no issues", which reads as a pass.
+on:
+  pull_request:
+    branches: [dev, master, main]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    uses: OpenVoiceOS/gh-automations/.github/workflows/lint.yml@dev
+    secrets: inherit
+    with:
+      ruff: false
+      pre_commit: false
+      actionlint: true
